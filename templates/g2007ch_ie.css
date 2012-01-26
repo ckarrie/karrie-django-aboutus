@@ -1,0 +1,26 @@
+#sub_content {
+	width:240px !important;
+	overflow:hidden !important;
+	background-color:#ffffff !important;
+	border-left:3px solid #4d4d4d !important;
+	border-bottom:3px solid #4d4d4d !important;
+	margin: 0 !important;
+}
+.aboutus, .home {
+	margin-right:10px !important;
+}
+#navi ul li {
+	margin-left: 0 !important;
+}
+
+#navi ul li a { border-bottom:3px solid #4d4d4d !important; }
+
+h1 {font-size:25px !important;}
+h2 {font-size:20px !important;}
+
+dl {margin:10px 0 !important; padding:0 !important;}
+dt {margin:10px 0 !important; padding:0 !important;}
+dd {margin:10px 0 !important; padding:0 !important;}
+
+ol {margin-top:10px !important; list-style-type: none !important;}
+ol li {padding:5px 5px 5px 0 !important;  list-style-type: none !important;}

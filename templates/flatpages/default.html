@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load comments %}
+{% block navi %}
+<ul>
+	<li class="current home"><a href="{% url mysites_index %}">Home</a></li>
+	<li class="aboutus"><a href="{% url karrie.django.aboutus.views.index %}">Über uns</a></li>
+	<li class="sponsors"><a href="{% url karrie.django.sponsors.views.index %}">Unsere Sponsoren</a></li>
+</ul>
+{% endblock %}
+
+{% block page_title %}{{ flatpage.title }}{% endblock %}
+
+{% block main_content %}
+<div class="box">
+{{ flatpage.content }}
+</div>
+{% if flatpage.enable_comments %}
+<div class="wer_wir_sind">
+
+	{% load humanize %}
+	{% get_comment_count for flatpages.flatpage flatpage.id as comment_count %}
+	{% get_comment_list for flatpages.flatpage flatpage.id as comment_list %}
+	
+	<h2>{{ comment_count|apnumber }} Kommentar{{ comment_count|pluralize:"e" }}</h2>
+		{% for comment in comment_list %}
+			<h3>#{{ forloop.counter|ordinal }}: <b>{% if comment.url %}<a target="_blank" href="{{ comment.url }}">{{ comment.user_name }}</a>{% else %}{{ comment.user_name }}{% endif %}</b></h3> 
+			<p>{{ comment.comment }}</p>
+		{% empty %}
+		<h3>Kein Kommentar bisher.</h3>
+		{% endfor %}
+</div>	
+{% endif %}
+{% endblock %}	
+
+
+{% block sub_content %}
+<h2>Übersicht</h2>
+<ul>
+	<li><p><a href="/faq/">FAQ - Fragen und Antworten</a></p></li>
+	<li><p><a href="/video/">Das Video über das G2007</a></p></li>
+	<li><p><a href="/impressum/">Impressum - Wer und Was</a></p></li>
+	<li><p><a href="/behindthescene/">Behind the Scene - Wie's funktioniert</a></p></li>
+	<li><p><a href="/disclaimer/">Disclaimer - Haftungsausschluss</a></p></li>
+</ul>
+
+	
+{% if flatpage.enable_comments %}	
+<h2>Kommentar abgeben</h2>
+{% get_comment_form for flatpages.flatpage flatpage.id as form %}
+	<form action="{% comment_form_target %}" method="post">
+	{% csrf_token %} <!-- left: csrf_token -->
+	{% for field in form.visible_fields %}
+		{% if forloop.first %}
+	    	{% for hidden in form.hidden_fields %}
+	        	{{ hidden }}
+	        {% endfor %}
+	    {% endif %}
+		
+	    {{ field.errors }}
+	
+		{% if user.is_authenticated %}	
+			{% ifequal field.name "name" %}
+	    		<p><b>{{ field.label_tag }}:</b></p>
+			<p>{{ user.get_full_name }}</p>
+			<input id="id_name" name="name" maxlength="50" type="hidden" value="{{ user.get_full_name }}" />
+			{% endifequal %}
+				
+			{% ifequal field.name "email" %}
+	    		<p><b>{{ field.label_tag }}:</b></p>
+			<p>{{ user.email }}</p>
+			<input id="id_email" name="email" maxlength="50" type="hidden" value="{{ user.email }}" />
+			{% endifequal %}
+			
+			{% ifequal field.name "comment" %}
+		    	<p><b>{{ field.label_tag }}:</b></p>
+				<textarea id="id_comment" rows="5" cols="29" name="comment"></textarea>	
+			{% endifequal %}
+		
+			{% ifnotequal field.name "name" %}{% ifnotequal field.name "email" %}{% ifnotequal field.name "comment" %}
+				<p><b>{{ field.label_tag }}:</b></p>
+				<p>{{ field }}</p>
+			{% endifnotequal %}{% endifnotequal %}{% endifnotequal %}
+			
+		{% else %}
+		
+			{% if forloop.first %}
+				<p>ggf. vorher <a href="{% url login %}?next={{ flatpage.get_absolute_url}}">Anmelden</a></p>
+			{% endif %}
+			
+			{% ifequal field.name "comment" %}
+		    	<p><b>{{ field.label_tag }}:</b></p>
+				<textarea id="id_comment" rows="5" cols="29" name="comment"></textarea>	
+			{% else %}
+			<p><b>{{ field.label_tag }}</b></p><p>{{ field }}</p>
+			{% endifequal %}
+			
+		{% endif %}
+	{% endfor %}
+	<input type="hidden" name="next" value="{{ flatpage.get_absolute_url }}" />
+	<p><input name="post" class="submit-post" value="Abschicken" type="submit" /></p>
+	</form>
+{% else %}
+<p style="margin:20px;">Kommentare deaktiviert</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "aboutus/base.html" %}
+{% block page_title %}{{ obj }} | {{ block.super }}{% endblock %}
+
+{% block meta_robots %}{% if obj.public %}INDEX,FOLLOW{% else %}NOINDEX,FOLLOW{% endif %}{% endblock %}
+
+{% block main_content %}
+<div class="box">
+	<h2>{{ obj }}</h2>
+	<h3>Herkunft</h3>
+	<p>{{ obj.location_text }}</p>
+	<h3>{{ obj.user.first_name }}'s Biographie</h3>
+	<p>{{ bio.text|safe }}</p>
+</div>
+<div class="box">
+	{% if bth %}
+	<h2>Bachelor-Thesis von {% for thesis in bth %}{% for author in thesis.authors.all %}<a href="{{ author.get_absolute_url }}">{{ author }}</a>{% if not forloop.last %} &amp;{% endif %}
+ {% endfor %}{% endfor %}</h2>
+	<h3>{{ bth.0.title }}</h3>
+	<h4>{{ bth.0.sub_title }}</h4>
+	<p class="newsdetails">Tags: {{ bth.0.tags }}</p>
+	{% if bth.0.tutors.count %}<p>Dozenten: {% for doc in bth.0.tutors.all %}<a href="{% url karrie.django.aboutus.views.details_username doc.username %}" title="{{ doc.get_full_name }}">{{ doc.get_full_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+	<p>{{ bth.0.abstract|safe }}</p>
+	{% endif %}
+</div>
+{% endblock %}
+
+{% block sub_content %}
+<h2>Steckbrief</h2>
+<p><img title="Bild von {{ obj }}" alt="Bild von {{ obj }}" src="{{ obj.portrait.url_240x240 }}" height="240"  width="240" /></p>
+<p>Name: {{ obj }}</p>
+{% if user.is_authenticated %}<p>E-Mail: {{ obj.user.email|urlize }}</p>{% endif %}
+{% if obj.competences.all %}<p>Funktion: {% for comp in  obj.competences.all %}{{ comp }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+{% if obj.ref_websites.all %}<p>Websites: {% for ref in  obj.ref_websites.all %}{{ ref|urlize }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+<h2>Kennst du schon ...</h2>
+<p style="text-align:center;">
+	{% if obj.get_previous_by_last_modified %}
+		<a href="{{ obj.get_previous_by_last_modified.get_absolute_url }}">
+			{% if obj.get_previous_by_last_modified.is_student %}
+				{{ obj.get_previous_by_last_modified }}
+			{% else %}
+				Unsere Dozenten
+			{% endif %}
+		</a> « 
+	{% endif %}
+	{% if obj.get_next_by_last_modified %} » 
+		<a href="{{ obj.get_next_by_last_modified.get_absolute_url }}">
+			{% if obj.get_next_by_last_modified.is_student %}
+				{{ obj.get_next_by_last_modified }}
+			{% else %}
+				Unsere Dozenten
+			{% endif %}
+		</a>
+	{% endif %}
+</p>
+{% endblock %}
+
+{% block footer_meta %}
+<small>META: Koordinaten {{ obj.origin.x|floatformat:2 }}, {{ obj.origin.y|floatformat:3 }} | Zuletzt aktualisiert vor {{ obj.last_modified|timesince }}</small>
+{% endblock %}

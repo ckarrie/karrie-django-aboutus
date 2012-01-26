@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block navi %}
+<ul>
+	<li class="home"><a href="{% url mysites_index %}">Home</a></li>
+	<li class="aboutus"><a href="{% url karrie.django.aboutus.views.index %}">Über uns</a></li>
+	<li class="sponsors"><a href="{% url karrie.django.sponsors.views.index %}">Unsere Sponsoren</a></li>
+</ul>
+{% endblock %}
+
+{% block page_title %}Server-Error{% endblock %}
+
+{% block main_content %}
+<div class="box">
+	<h2>500 - Server Error</h2>
+	<img src="/static/g2007.ch/baustelle.jpg" alt="Baustelle" style="float:left;" />
+	<p>Es ist ein schwerer Fehler aufgetreten. Die Administratoren wurden darüber benachrichtigt.</p>
+	<p>Wegen Bauarbeiten ist die Seite noch nicht funktionstüchtig. Wie wäre es denn mit einer <a href="/">funktionstüchtigen Seite</a>?</p>
+</div>
+{% endblock %}
+
+{% block sub_content %}
+
+{% endblock %}

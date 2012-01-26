@@ -1,0 +1,66 @@
+{% extends "aboutus/base.html" %}
+{% load humanize %}
+{% block js %}
+	{{ map.media }}
+	<script type="text/javascript" src="{{ STATIC_URL }}olwidget/js/cloudmade.js"></script>
+
+{% endblock %}
+
+
+{% block page_title %}Wer, wo, woher? | {{ block.super }}{% endblock %}
+
+{% block main_content %}
+<div class="box">
+	<h2>Woher wir kommen</h2>
+	<div id="map">
+	{{ map }}
+	</div>
+</div>
+
+{% if user.is_authenticated %}
+<div class="box">
+	
+	<h2>Zuletzt online war</h2>
+	<div class="info"><p>Serverzeit: {% now "H:i" %} Uhr</p></div>
+	<ul>	
+	{% for user in last_online %}
+		<li><p><a href="{% url karrie.django.aboutus.views.details_username user=user.username %}">{{ user.get_full_name }}</a> war zuletzt vor <b>{{ user.last_login|timesince }}</b> online</p></li>
+	{% endfor %}
+	</ul>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block sub_content %}
+<h2>Anleitung</h2>
+<h3>Kartenausschnitt bewegen</h3>
+<p>Zum Bewegen des Kartenausschnitts mit der gedrückten linken Maustauste die Karte verschieben.</p>
+<h3>Marker-Layer ein/ausblenden</h3>
+<p>Verschiedene Layer können durch das blau hinterlegt Pluszeichen ein- und ausgeschaltet werden.</p>
+<h2>Klassenzimmer</h2>
+<table border="0" width="240px">
+	<tr>
+		<td colspan="1" align="center"></td>
+		<td colspan="5" align="center"><p><a href="{% url karrie.django.aboutus.views.tutors %}">Unsere Dozenten <img src="{{ STATIC_URL }}g2007.ch/blue_marker.png" alt="{{ platz.get_full_name }}" title="{{ platz.get_full_name }}" /></a></p></td>
+		<td colspan="1" align="center"></td>
+	</tr>
+	<tr>
+		<td colspan="7"><hr /></td>
+	</tr>
+	{% for reihe in sitzplatz_matrix %}
+	<tr>
+		{% for platz in reihe %}
+			{% if platz %}
+			<td width="15%"><a href="{% url karrie.django.aboutus.views.details_username user=platz.username %}"><img src="{{ STATIC_URL }}g2007.ch/red_marker.png" alt="{{ platz.get_full_name }}" title="{{ platz.get_full_name }}" /></a></td>
+			{% else %}
+			<td width="10%"></td>
+			{% endif %}
+		{% endfor %}
+	</tr>
+	{% endfor %}
+</table>
+<h2>Schon gehört von...</h2>
+<h3>... {{ random_aboutus.user.get_full_name }}?</h3>
+<p style="text-align:center;"><img src="{{ random_aboutus.portrait.url_100x100 }}" alt="{{ random_aboutus }}" title="{{ random_aboutus }}" width="100" height="100" /><br />Das ist {{ random_aboutus }}! » <a href="{{ random_aboutus.get_absolute_url }}">Profil anzeigen</a></p>
+
+{% endblock %}

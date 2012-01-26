@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block page_title %}Login{% endblock %}
+
+{% block main_content %}
+
+
+<div class="box">
+	<h2>Login</h2>
+{% if form.errors %}
+<p>Anmeldung fehlgeschlagen (Falscher Benutzername und/oder Passwort). Bitte erneut eingeben (evtl. Feststelltaste deaktivieren).</p>
+{% endif %}
+
+<form method="post" action="{% url django.contrib.auth.views.login %}">{% csrf_token %}
+<table>
+<tr>
+    <td><p>{{ form.username.label_tag }}</p></td>
+    <td>{{ form.username }}</td>
+</tr>
+<tr>
+    <td><p>{{ form.password.label_tag }}</p></td>
+    <td>{{ form.password }}</td>
+</tr>
+</table>
+
+<input type="submit" value="Anmelden" />
+{% if next %}
+<input type="hidden" name="next" value="{{ next }}" />
+{% else %}
+<p>Weiterleitung nach {{ request.META.HTTP_REFERER }}.</p>
+<input type="hidden" name="next" value="{{ request.path }}" />
+{% endif %}
+</form>
+</div>
+{% endblock %}
+
+{% block sub_content %}
+<h2>Probleme bei der Anmeldung?</h2>
+<h3>Passwort vergessen?</h3>
+<p>Mail an Administrator, siehe <a href="/impressum/">Impressum</a></p>
+
+<h3>Wo kann ich mich Registrieren?</h3>
+<p>Keine Registrierung möglich.</p>
+{% endblock %}

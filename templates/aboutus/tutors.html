@@ -1,0 +1,39 @@
+{% extends "aboutus/base.html" %}
+{% block navi %}
+<ul>
+	<li><a href="{% url mysites_index %}">Home</a></li>
+	<li class="current"><a href="{% url karrie.django.aboutus.views.index %}">Über uns</a></li>
+	<li><a href="{% url karrie.django.sponsors.views.index %}">Unsere Sponsoren</a></li>
+</ul>
+{% endblock %}
+
+{% block page_title %}Unsere Dozenten | {{ block.super }}{% endblock %}
+
+{% block main_content %}
+{% for tutor in tutors %}
+<div class="box">
+	<h2><a name="{{ tutor }}"></a>{{ tutor.user.get_full_name }}</h2>
+	<h3>Dozent für</h3>
+	<ul>
+		{% for comp in tutor.competences.all %}
+		<li><p>{{ comp }}</p></li>
+		{% endfor %}
+	</ul>
+	<p><b>E-Mail:</b>&nbsp;{% if user.is_authenticated %}{{ tutor.user.email|urlize }}{% else %} <i>E-Mail-Adresse für anonyme Benutzer versteckt, bitte <a href="{% url login %}">Anmelden</a></i>{% endif %}</p>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block sub_content %}
+<h2>Dozenten</h2>
+	<ul>
+	{% for tutor in tutors %}
+		<li><a href="#{{ tutor.slug }}">{{ tutor.user.get_full_name }}</a></li>
+	{% endfor %}
+	</ul>
+	
+<h2>Kennst du schon ...</h2>
+{% for tutor in tutors %}
+{% if forloop.first %}<p style="text-align:center;">{% if tutor.get_previous_by_last_modified %}<a href="{{ tutors.0.get_previous_by_last_modified.get_absolute_url }}">{{ tutor.get_previous_by_last_modified }}</a> « {% endif %}{% endif %}{% if forloop.last %}{% if tutor.get_next_by_last_modified %} » <a href="{{ tutor.get_next_by_last_modified.get_absolute_url }}">{{ tutor.get_next_by_last_modified }}</a>{% endif %}</p>{% endif %}
+{% endfor %}
+{% endblock %}

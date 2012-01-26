@@ -1,0 +1,202 @@
+{% extends "aboutus/base.html" %}
+{% block bodyonload %}page_init(){% endblock %}
+
+{% block css %}
+	<style type="text/css">
+	.olControlPanel div{display:block;width:24px;height:24px;margin:5px;background-color:red}
+	.olControlPanel .olControlMouseDefaultsItemActive{background-color:blue;background-image:url("http://openlayers.org/dev/theme/default/img/pan_on.png")}
+	.olControlPanel .olControlMouseDefaultsItemInactive{background-color:orange;background-image:url("http://openlayers.org/dev/theme/default/img/pan_off.png")}
+
+	.olControlPanel .olControlZoomBoxItemInactive{width:24px;height:22px;background-color:orange;background-image:url("http://openlayers.org/dev/theme/default/img/drag-rectangle-off.png")}
+	.olControlPanel .olControlZoomBoxItemActive{width:24px;height:22px;background-color:blue;background-image:url("http://openlayers.org/dev/theme/default/img/drag-rectangle-on.png")}
+
+    .olControlLoadingPanel {
+            background-image:url({{ STATIC_URL }}js/OpenLayers-2.8/theme/default/img/loading.gif);
+            background-position:center;
+            background-repeat:no-repeat;
+        }
+	
+	</style>
+{% endblock %}
+
+{% block js %}
+	<script type="text/javascript" src="http://www.openlayers.org/api/OpenLayers.js"></script>
+    <!-- script type="text/javascript" src="{{ STATIC_URL }}js/OpenLayers-2.8/lib/OpenLayers/Control/LoadingPanel.js"></script -->
+    <!-- script type="text/javascript" src="{{ STATIC_URL }}js/OpenLayers-2.8/lib/OpenLayers/Control/LayerSwitcherRadioReg.js"></script -->
+  	<script type="text/javascript" src="http://www.openstreetmap.org/openlayers/OpenStreetMap.js"></script>
+	<script type="text/javascript">
+	
+	var list_students = [];
+	var map;
+	
+	var markers_students = new OpenLayers.Layer.Markers("Klasse g2007");
+	var markers_tutors = new OpenLayers.Layer.Markers("Unsere Dozenten");
+	
+	function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow, icon, student) {
+		
+		if (student === true) {
+			var feature = new OpenLayers.Feature(markers_students, ll);
+		}
+		else {
+			var feature = new OpenLayers.Feature(markers_tutors, ll);
+		}
+		
+        feature.closeBox = closeBox;
+        feature.popupClass = popupClass;
+        feature.data.popupContentHTML = popupContentHTML;
+        feature.data.overflow = (overflow) ? "auto" : "hidden";
+		feature.data.icon = icon;
+                
+        var marker = feature.createMarker();
+
+        var markerClick = function (evt) {
+            if (this.popup === null) {
+                this.popup = this.createPopup(this.closeBox);
+                map.addPopup(this.popup);
+                this.popup.show();
+            } else {
+                this.popup.toggle();
+            }
+            currentPopup = this.popup;
+            OpenLayers.Event.stop(evt);
+        };
+        marker.events.register("mousedown", feature, markerClick);
+		if (student === true) {
+			markers_students.addMarker(marker);
+			list_students.push(marker);
+		}
+		else {
+			markers_tutors.addMarker(marker);
+		}
+            
+	}
+	
+	function map_init() {
+		map = new OpenLayers.Map ("map", {
+			controls:[
+				//new OpenLayers.Control.Navigation(),
+				//new OpenLayers.Control.PanZoomBar(),
+				//new OpenLayers.Control.LayerSwitcher({roundedCornerColor: '#4d4d4d'}),
+				new OpenLayers.Control.LayerSwitcher(),
+				new OpenLayers.Control.ScaleLine()
+				//new OpenLayers.Control.MousePosition()
+				],
+			maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
+			maxResolution: 156543.0399,
+			numZoomLevels: 16,
+			units: 'm',
+			projection: new OpenLayers.Projection("EPSG:4326"),
+			displayProjection: new OpenLayers.Projection("EPSG:4326")
+			} );
+		layer_mapnik = new OpenLayers.Layer.OSM.Mapnik("OSM Mapnik",
+													{visibility:true,
+													transitionEffect: "resize",
+													units: "m",
+													isBaseLayer:true}
+													);
+		map.addLayer(layer_mapnik);
+		var lonLat = new OpenLayers.LonLat(8.16,48.26).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+		var zoom = 6;
+		map.setCenter(lonLat, zoom);
+		
+		zb = new OpenLayers.Control.ZoomBox({title:"Zoom Box: Bereich durch Aufspannen einer Box zommen"});
+		md = new OpenLayers.Control.MouseDefaults({title:'Bewegen des Kartenauschnitts'});
+	
+		var panel = new OpenLayers.Control.Panel({defaultControl:md});
+		panel.addControls([
+						md,
+						zb
+						]);
+		map.addControl(panel);
+		
+		map.addLayer(markers_students);
+        map.addLayer(markers_tutors);
+
+		AutoSizeFramedCloud = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
+            'autoSize': true
+        });
+		
+		size = new OpenLayers.Size(10,17);
+        offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+
+		
+		{% for user, details in user_with_location.items %}
+			ll = new OpenLayers.LonLat({{ details.1 }},{{ details.2 }});
+	        popupClass = AutoSizeFramedCloud;
+
+			{% if details.0.is_student %}
+			    icon_student = new OpenLayers.Icon('{{ STATIC_URL }}g2007.ch/red_marker.png',size,offset);
+	            popupContentHTML = '<div class="bubble box"><img alt="Bild von {{ user.get_full_name }}" title="Bild von {{ user.get_full_name }}" src="{{ details.0.portrait.url_100x100 }}" /><h2>{{ user.get_full_name }}</h2><h3>Reverse Geocoding</h3><p class="search_results_entry">{{ details.0.location_text }}</p><h3>Details</h3><p>Details über <a href="{{ details.0.get_absolute_url }}">{{ details.0 }}</a></p></div>';
+				addMarker(ll, popupClass, popupContentHTML, true, true, icon_student, true); 
+			{% else %}
+				popupContentHTML = '<div class="bubble box"><img alt="Bild von {{ user.get_full_name }}" title="Bild von {{ user.get_full_name }}" src="{{ details.0.portrait.url_100x100 }}" /><h2>{{ user.get_full_name }}</h2><h3>Reverse Geocoding</h3><p class="search_results_entry">{{ details.0.location_text }}</p><h3>Details</h3><p>Details über unseren Dozenten <a href="{% url aboutus_tutors %}#{{ user }}">{{ details.0 }}</a></p></div>';
+				icon_tutor = new OpenLayers.Icon('{{ STATIC_URL }}g2007.ch/blue_marker.png',size,offset);
+				addMarker(ll, popupClass, popupContentHTML, true, true, icon_tutor, false);  
+			{% endif %}
+		{% endfor %}
+
+	}
+	
+	function page_init() {
+		map_init();
+	}
+	function zoom_to(lon, lat, zoom){
+		var lonLat = new OpenLayers.LonLat(lon,lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+		map.setCenter(lonLat, zoom);
+	}
+	</script>
+{% endblock %}
+
+
+{% block page_title %}Über uns{% endblock %}
+
+{% block main_content %}
+<div class="box">
+	<h2>Woher wir kommen</h2>
+	<div id="map" style="width:550px; height:400px;"></div>
+</div>
+
+{% if user.is_authenticated %}
+<div class="box">
+	
+	<h2>Zuletzt online war</h2>
+	<div class="info"><p>Serverzeit: {% now "H:i" %} Uhr</p></div>
+	<ul>
+	{% load humanize %}
+	{% for user in last_online %}
+		<li><p><a href="{% url karrie.django.aboutus.views.details_username user=user.username %}">{{ user.get_full_name }}</a> war zuletzt vor <b>{{ user.last_login|timesince }}</b> online</p></li>
+	{% endfor %}
+	</ul>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block sub_content %}
+<h2>Anleitung</h2>
+<h3>Kartenausschnitt bewegen</h3>
+<p>Zum Bewegen des Kartenausschnitts mit der gedrückten linken Maustauste die Karte verschieben.</p>
+<h3>Marker-Layer ein/ausblenden</h3>
+<p>Verschiedene Layer können durch das blau hinterlegt Pluszeichen ein- und ausgeschaltet werden.</p>
+<h2>Klassenzimmer</h2>
+<table border="0" width="240px">
+	<tr>
+		<td colspan="1" align="center"></td>
+		<td colspan="5" align="center"><p><a href="{% url karrie.django.aboutus.views.tutors %}">Unsere Dozenten <img src="{{ STATIC_URL }}g2007.ch/blue_marker.png" alt="{{ platz.get_full_name }}" title="{{ platz.get_full_name }}" /></a></p></td>
+		<td colspan="1" align="center"></td>
+	</tr>
+	<tr>
+		<td colspan="7"><hr /></td>
+	</tr>
+	{% for reihe in sitzplatz_matrix %}
+	<tr>
+		{% for platz in reihe %}
+			{% if platz %}
+			<td width="15%"><a href="{% url karrie.django.aboutus.views.details_username user=platz.username %}"><img src="{{ STATIC_URL }}g2007.ch/red_marker.png" alt="{{ platz.get_full_name }}" title="{{ platz.get_full_name }}" /></a></td>
+			{% else %}
+			<td width="10%"></td>
+			{% endif %}
+		{% endfor %}
+	</tr>
+	{% endfor %}
+</table>
+{% endblock %}

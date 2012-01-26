@@ -1,0 +1,11 @@
+{% extends "mysites/g2007ch/base.html" %}
+
+{% block page_title %}Über das G2007{% endblock %}
+
+{% block navi %}
+<ul>
+	<li class="home"><a href="{% url mysites_index %}">Home</a></li>
+	<li class="current aboutus"><a href="{% url karrie.django.aboutus.views.index %}">Über uns</a></li>
+	<li class="sponsors"><a href="{% url karrie.django.sponsors.views.index %}">Unsere Sponsoren</a></li>
+</ul>
+{% endblock %}
