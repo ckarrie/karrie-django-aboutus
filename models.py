@@ -42,7 +42,7 @@ class Competence(models.Model):
         
         
 class Reference(models.Model):
-    url = models.URLField(verify_exists=False, help_text='z.B. <em>http://meinetollewebsite.ch</em>')
+    url = models.URLField(help_text='z.B. <em>http://meinetollewebsite.ch</em>')
     descr = models.TextField(max_length = 500, help_text='Kurze Beschreibung der Webseite', verbose_name = 'Beschreibung')
     
     def __unicode__(self):
