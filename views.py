@@ -5,7 +5,7 @@
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.views.generic.simple import redirect_to
+from django.shortcuts import redirect
 from django.contrib import messages
 from django.template import Context, Template
 
@@ -164,7 +164,7 @@ def details_username(request, user):
     #if created:
     #    msg = u'Es wurde eine neues About für %s angelegt' % obj.user.get_full_name()
     obj = get_object_or_404(models.About, user__username=user)
-    return redirect_to(request, url=obj.get_absolute_url(), permanent=False)
+    return redirect(obj.get_absolute_url(), permanent=False)
     
 def tutors(request):
     tutors = models.About.objects.filter(user__groups__name = TUTORS_GROUP)
