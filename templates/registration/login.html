@@ -11,7 +11,7 @@
 <p>Anmeldung fehlgeschlagen (Falscher Benutzername und/oder Passwort). Bitte erneut eingeben (evtl. Feststelltaste deaktivieren).</p>
 {% endif %}
 
-<form method="post" action="{% url django.contrib.auth.views.login %}">{% csrf_token %}
+<form method="post" action="{% url "django.contrib.auth.views.login" %}">{% csrf_token %}
 <table>
 <tr>
     <td><p>{{ form.username.label_tag }}</p></td>
